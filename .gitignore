@@ -1,0 +1,7 @@
+bin
+build
+dist
+javadocs
+.settings
+target
+*.class
