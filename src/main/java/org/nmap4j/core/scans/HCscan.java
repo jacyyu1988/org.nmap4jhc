@@ -38,11 +38,12 @@ public class HCscan extends BaseScan{
      * @return  NMapRun  对象
      */
     public NMapRun synScan(String taskId,Flag check_type,
-                              String hosts[], String ports[],
+                              String hosts[],String [] excludeHosts, String ports[],
                               boolean isPing,Integer outTime,Integer hostgroup){
 
 
         this.includeHosts(hosts);
+        this.excludeHosts(excludeHosts);
         this.argProps.setTaskId(taskId);
 
         if(check_type.equals(Flag.CHECK_TYPE_IP)){
@@ -79,10 +80,11 @@ public class HCscan extends BaseScan{
      * @param hostgroup  Integer 线程数
      * @return
      */
-    public NMapRun synScanByFile(String taskId,Flag check_type,String inputFile,
+    public NMapRun synScanByFile(String taskId,Flag check_type,String inputFile,String [] excludeHosts,
                                  String ports[],boolean isPing,Integer outTime,Integer hostgroup){
 
         this.argProps.replaceFlag(Flag.INPUT_FILENAME,inputFile);
+        this.excludeHosts(excludeHosts);
         this.argProps.setTaskId(taskId);
 
         if(check_type.equals(Flag.CHECK_TYPE_IP)){
@@ -118,12 +120,15 @@ public class HCscan extends BaseScan{
      * @param hostgroup Integer
      * @param callback 回调方法
      */
-    public void asynScanByFile(String taskId,Flag check_type,String inputFile,
+    public void asynScanByFile(String taskId,Flag check_type,String inputFile,String excludeHosts[],
                                String ports[],boolean isPing,Integer outTime,
                                Integer hostgroup,IScanCallback callback){
 
+
         this.argProps.replaceFlag(Flag.INPUT_FILENAME,inputFile);
+        this.excludeHosts(excludeHosts);
         this.argProps.setTaskId(taskId);
+
 
         if(check_type.equals(Flag.CHECK_TYPE_IP)){
             this.addPorts(ports);
@@ -162,7 +167,7 @@ public class HCscan extends BaseScan{
      * @param outTime
      * @param hostgroup
      * @param callback
-     * @param params  扩展字段，可以给结果传值
+     * @param params  扩展字段，可以给结果传值  {excludes:String[]  忽略的host}
      */
     public void asynScanByFileOutFile(String taskId,Flag check_type,String inputFile,String outputFile,
                                       String ports[],boolean isPing,Integer outTime,Integer hostgroup,
@@ -172,6 +177,12 @@ public class HCscan extends BaseScan{
         this.setOutputType(OutputType.XML,outputFile);
         this.argProps.setTaskId(taskId);
         this.argProps.setParams(params);
+
+        //excludes ips
+        String excludes[]=(String[])params.get("excludes");
+        if(excludes!=null&&excludes.length>0){
+            this.excludeHosts(excludes);
+        }
 
         if(check_type.equals(Flag.CHECK_TYPE_IP)){
             this.addPorts(ports);
@@ -188,6 +199,10 @@ public class HCscan extends BaseScan{
         }
         this.argProps.replaceFlag(Flag.HOST_TIMEOUT,outTime+"");
         this.argProps.replaceFlag(Flag.PARALLEL_MIN_HOST_GROUP_SIZE,hostgroup+"");
+
+
+
+
 
         try {
             executeAsynchronousScan( callback );
@@ -210,9 +225,10 @@ public class HCscan extends BaseScan{
      * @param hostgroup
      * @param callback
      */
-    public  void asynScan(String taskId,Flag check_type,String[] hosts, String ports[],boolean isPing,Integer outTime,Integer hostgroup,IScanCallback callback){
+    public  void asynScan(String taskId,Flag check_type,String[] hosts,String excludeHosts[], String ports[],boolean isPing,Integer outTime,Integer hostgroup,IScanCallback callback){
 
         this.includeHosts(hosts);
+        this.excludeHosts(excludeHosts);
         this.argProps.setTaskId(taskId);
 
         if(check_type.equals(Flag.CHECK_TYPE_IP)){
